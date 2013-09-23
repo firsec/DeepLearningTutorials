@@ -121,11 +121,9 @@ class LogisticRegression(object):
         # LP[n-1,y[n-1]]] and T.mean(LP[T.arange(y.shape[0]),y]) is
         # the mean (across minibatch examples) of the elements in v,
         # i.e., the mean log-likelihood across the minibatch.
-        return -T.mean(T.log(self.p_y_given_x)[T.arange(y.shape[0]), y])
 
-    def predict(self):
-        return T.mul(self.y_pred,1)
-        
+        return -T.mean(T.log(self.p_y_given_x)[T.arange(y.shape[0]), y]) + 0.0001*T.sum(self.W **2) 
+
     def errors(self, y):
         """Return a float representing the number of errors in the minibatch
         over the total number of examples of the minibatch ; zero one
@@ -194,7 +192,7 @@ def load_data(dataset):
     test_set_size = 1000;
     predict_set_size = 28000;
 
-    debug = "false";
+    debug = "true";
     if debug == "true":
       train_set_size = 3600;
       valid_set_size = 500;
@@ -285,7 +283,7 @@ def load_data(dataset):
 
 def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
                            dataset='../data/mnist.pkl.gz',
-                           batch_size=600):
+                           batch_size=500):
     """
     Demonstrate stochastic gradient descent optimization of a log-linear
     model
@@ -343,11 +341,6 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
             givens={
                 x: test_set_x[index * batch_size: (index + 1) * batch_size],
                 y: test_set_y[index * batch_size: (index + 1) * batch_size]})
-
-    release_output = theano.function(inputs=[index],
-            outputs=classifier.release_output(),
-            givens={
-                x: predict_set_x[index:]})
 
     validate_model = theano.function(inputs=[index],
             outputs=classifier.errors(y),
@@ -428,9 +421,11 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
                     test_losses = [test_model(i)
                                    for i in xrange(n_test_batches)]
                     test_score = numpy.mean(test_losses)
+                    
+                    y_pred_show = classifier.y_pred.eval({input:predict_set_x})
 
-                    y_pred_show = [release_output(i)
-                                   for i in xrange(n_predict_batches)]
+                    y_pred_show = [classifier.y_pred.eval({input:predict_set_x[index * batch_size: (index + 1) * batch_size]})
+                                   for index in xrange(n_predict_batches)]
 
                     print y_pred_show;
                     f = open("predict_res","w+");

@@ -34,7 +34,7 @@ import theano.tensor as T
 from theano.tensor.signal import downsample
 from theano.tensor.nnet import conv
 
-from logistic_sgd import LogisticRegression, load_data
+from logistic_sgd_kaggle import LogisticRegression, load_data
 from mlp import HiddenLayer
 
 
@@ -196,10 +196,6 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
                 x: test_set_x[index * batch_size: (index + 1) * batch_size],
                 y: test_set_y[index * batch_size: (index + 1) * batch_size]})
 
-    predict_model = theano.function([index], layer3.predict(),
-             givens={
-                x: predict_set_x[index * batch_size: (index + 1) * batch_size]})
-
     validate_model = theano.function([index], layer3.errors(y),
             givens={
                 x: valid_set_x[index * batch_size: (index + 1) * batch_size],
@@ -286,8 +282,8 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
                     test_losses = [test_model(i) for i in xrange(n_test_batches)]
                     test_score = numpy.mean(test_losses)
                     
-                    predict_res_array = [predict_model(i) for i in xrange(n_predict_batches)]
-                    print predict_res_array;
+                    predict_res_array = [layer3.y_pred.eval({input:predict_set_x[i * batch_size: (i + 1) * batch_size]})
+                    
                     f = open("predict_res","w+");
                     for y_pred_item_array in predict_res_array:
                       for y_pred_item in y_pred_item_array:
