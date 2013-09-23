@@ -124,7 +124,7 @@ class LogisticRegression(object):
         return -T.mean(T.log(self.p_y_given_x)[T.arange(y.shape[0]), y])
 
     def predict(self):
-        return T.mul(self.y_pred,1)
+        return T.mul(self.y_pred,1);
         
     def errors(self, y):
         """Return a float representing the number of errors in the minibatch
@@ -189,10 +189,10 @@ def load_data(dataset):
     test_set=list();
     predict_set=list();
 
-    train_set_size = 36000;
-    valid_set_size = 5000;
-    test_set_size = 1000;
-    predict_set_size = 28000;
+    train_set_size = 36000*9;
+    valid_set_size = 5000*9;
+    test_set_size = 1000*9;
+    predict_set_size = 28000*9;
 
     debug = "false";
     if debug == "true":
@@ -345,7 +345,7 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
                 y: test_set_y[index * batch_size: (index + 1) * batch_size]})
 
     release_output = theano.function(inputs=[index],
-            outputs=classifier.release_output(),
+            outputs=classifier.predict(),
             givens={
                 x: predict_set_x[index:]})
 
