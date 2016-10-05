@@ -21,7 +21,7 @@ References:
 __docformat__ = 'restructedtext en'
 
 
-import cPickle
+#import cPickle
 import gzip
 import os
 import sys
@@ -216,7 +216,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     ######################
     # BUILD ACTUAL MODEL #
     ######################
-    print '... building the model'
+    print ('... building the model')
 
     # allocate symbolic variables for the data
     index = T.lscalar()  # index to a [mini]batch
@@ -280,7 +280,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     ###############
     # TRAIN MODEL #
     ###############
-    print '... training'
+    print ('... training')
 
     # early-stopping parameters
     patience = 10000  # look as this many examples regardless
@@ -349,9 +349,9 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     print(('Optimization complete. Best validation score of %f %% '
            'obtained at iteration %i, with test performance %f %%') %
           (best_validation_loss * 100., best_iter + 1, test_score * 100.))
-    print >> sys.stderr, ('The code for file ' +
-                          os.path.split(__file__)[1] +
-                          ' ran for %.2fm' % ((end_time - start_time) / 60.))
+#    print >> sys.stderr, ('The code for file ' +
+#                          os.path.split(__file__)[1] +
+#                          ' ran for %.2fm' % ((end_time - start_time) / 60.))
 
 
 if __name__ == '__main__':

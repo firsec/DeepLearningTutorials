@@ -21,7 +21,7 @@ References:
    http://yann.lecun.com/exdb/publis/pdf/lecun-98.pdf
 
 """
-import cPickle
+#import cPickle
 import gzip
 import os
 import sys
@@ -34,7 +34,8 @@ import theano.tensor as T
 from theano.tensor.signal import downsample
 from theano.tensor.nnet import conv
 
-from logistic_sgd import LogisticRegression, load_data
+from logistic_sgd_kaggle import LogisticRegression
+from logistic_sgd_kaggle import load_data
 from mlp import HiddenLayer
 
 
@@ -153,7 +154,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
     ######################
     # BUILD ACTUAL MODEL #
     ######################
-    print '... building the model'
+    print ('... building the model')
 
     # Reshape matrix of rasterized images of shape (batch_size,28*28)
     # to a 4D tensor, compatible with our LeNetConvPoolLayer
@@ -196,9 +197,9 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
                 x: test_set_x[index * batch_size: (index + 1) * batch_size],
                 y: test_set_y[index * batch_size: (index + 1) * batch_size]})
 
-    predict_model = theano.function([index], layer3.predict(),
+    predict_model = theano.function([], layer3.predict(),
              givens={
-                x: predict_set_x[index * batch_size: (index + 1) * batch_size]})
+                x: predict_set_x[:]})
 
     validate_model = theano.function([index], layer3.errors(y),
             givens={
@@ -228,7 +229,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
     ###############
     # TRAIN MODEL #
     ###############
-    print '... training'
+    print ('... training')
     # early-stopping parameters
     patience = 10000  # look as this many examples regardless
     patience_increase = 2  # wait this much longer when a new best is
@@ -252,19 +253,19 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
 
     while (epoch < n_epochs) and (not done_looping):
         epoch = epoch + 1
-        for minibatch_index in xrange(n_train_batches):
+        for minibatch_index in range(int(n_train_batches)):
 
             iter = (epoch - 1) * n_train_batches + minibatch_index
 
             if iter % 100 == 0:
-                print 'training @ iter = ', iter
+                print (('training @ iter = '), (iter))
             cost_ij = train_model(minibatch_index)
 
             if (iter + 1) % validation_frequency == 0:
 
                 # compute zero-one loss on validation set
                 validation_losses = [validate_model(i) for i
-                                     in xrange(n_valid_batches)]
+                                     in range(int(n_valid_batches))]
                 this_validation_loss = numpy.mean(validation_losses)
                 print('epoch %i, minibatch %i/%i, validation error %f %%' % \
                       (epoch, minibatch_index + 1, n_train_batches, \
@@ -283,18 +284,9 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
                     best_iter = iter
 
                     # test it on the test set
-                    test_losses = [test_model(i) for i in xrange(n_test_batches)]
+                    test_losses = [test_model(i) for i in range(int(n_test_batches))]
                     test_score = numpy.mean(test_losses)
-                    
-                    predict_res_array = [predict_model(i) for i in xrange(n_predict_batches)]
-                    print predict_res_array;
-                    f = open("predict_res","w+");
-                    for y_pred_item_array in predict_res_array:
-                      for y_pred_item in y_pred_item_array:
-                        f.write(str(y_pred_item)+'\n');
-                    f.close();
-
- 
+                     
                     print(('     epoch %i, minibatch %i/%i, test error of best '
                            'model %f %%') %
                           (epoch, minibatch_index + 1, n_train_batches,
@@ -309,6 +301,20 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
     print('Best validation score of %f %% obtained at iteration %i,'\
           'with test performance %f %%' %
           (best_validation_loss * 100., best_iter + 1, test_score * 100.))
+   
+    print ("Writing result to output file.")
+    predict_res_array = predict_model()
+    print (predict_res_array)
+    f = open("predict_res","w+");
+    n = 1
+    f.write('ImageId,Label'+'\n')
+    for y_pred_item in y_pred_show:
+      f.write(str(n)+','+str(y_pred_item)+'\n')
+      n+=1
+    f.close();
+
+    
+    
     print >> sys.stderr, ('The code for file ' +
                           os.path.split(__file__)[1] +
                           ' ran for %.2fm' % ((end_time - start_time) / 60.))

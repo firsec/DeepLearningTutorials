@@ -35,7 +35,7 @@ References:
 """
 __docformat__ = 'restructedtext en'
 
-import cPickle
+#import cPickle
 import gzip
 import os
 import sys
@@ -170,7 +170,6 @@ def load_data(dataset):
 #
 #    print '... loading data'
 #
-#
 #    # Load the dataset
 #    f = gzip.open(dataset, 'rb')
 #    train_set, valid_set, test_set = cPickle.load(f)
@@ -183,16 +182,16 @@ def load_data(dataset):
 #    #target to the example with the same index in the input.
 
 
-    print '... loading data'
+    print ('... loading data')
     train_set=list();
     valid_set=list();
     test_set=list();
     predict_set=list();
 
-    train_set_size = 36000*9;
-    valid_set_size = 5000*9;
-    test_set_size = 1000*9;
-    predict_set_size = 28000*9;
+    train_set_size = 36000;
+    valid_set_size = 5000;
+    test_set_size = 1000;
+    predict_set_size = 28000;
 
     debug = "false";
     if debug == "true":
@@ -211,34 +210,35 @@ def load_data(dataset):
     predict_set.append(numpy.ndarray(shape=(predict_set_size), dtype=int));
 
     #load data from kaggle test set
-    with open('train.csv', 'rb') as csvfile:
+    with open('train.csv', 'r') as csvfile:
       datareader = csv.reader(csvfile, delimiter=',')
       index=0;
       for row in datareader:
+        #print (int(row[0]))
         if index<train_set_size : 
-          train_set[1][index] = string.atoi(row[0]);
-          for pixel_index in xrange(1,28*28+1) : 
-            train_set[0][index][pixel_index-1] = string.atof(row[pixel_index])/255;
+          train_set[1][index] = int(row[0]);
+          for pixel_index in range(1,28*28+1) : 
+            train_set[0][index][pixel_index-1] = float(row[pixel_index])/255;
         elif index < train_set_size + valid_set_size :
-          valid_set[1][index-train_set_size] = string.atoi(row[0]);
-          for pixel_index in xrange(1,28*28+1) : 
-            valid_set[0][index-train_set_size][pixel_index-1] = string.atof(row[pixel_index])/255;
+          valid_set[1][index-train_set_size] = int(row[0]);
+          for pixel_index in range(1,28*28+1) : 
+            valid_set[0][index-train_set_size][pixel_index-1] = float(row[pixel_index])/255;
         else :
-          test_set[1][index-train_set_size-valid_set_size] = string.atoi(row[0]);
-          for pixel_index in xrange(1,28*28+1) : 
-            test_set[0][index-train_set_size-valid_set_size][pixel_index-1] = string.atof(row[pixel_index])/255;
+          test_set[1][index-train_set_size-valid_set_size] = int(row[0]);
+          for pixel_index in range(1,28*28+1) : 
+            test_set[0][index-train_set_size-valid_set_size][pixel_index-1] = float(row[pixel_index])/255;
         index+=1;
         if index == train_set_size + valid_set_size + test_set_size : 
           break; 
     
-    print '... loading predict dataset'
+    print ('... loading predict dataset')
     #load data from kaggle test set
-    with open('test.csv', 'rb') as csvfile:
+    with open('test.csv', 'r') as csvfile:
       datareader = csv.reader(csvfile, delimiter=',')
       index=0;
       for row in datareader:
-        for pixel_index in xrange(0,28*28) : 
-          predict_set[0][index][pixel_index] = string.atof(row[pixel_index])/255;
+        for pixel_index in range(0,28*28) : 
+          predict_set[0][index][pixel_index] = float(row[pixel_index])/255;
         index+=1;
         if index == predict_set_size: 
           break;
@@ -283,9 +283,9 @@ def load_data(dataset):
     return rval
 
 
-def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
+def sgd_optimization_mnist(learning_rate=0.06, n_epochs=10000,
                            dataset='../data/mnist.pkl.gz',
-                           batch_size=600):
+                           batch_size=10):
     """
     Demonstrate stochastic gradient descent optimization of a log-linear
     model
@@ -315,12 +315,14 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
     n_train_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
     n_valid_batches = valid_set_x.get_value(borrow=True).shape[0] / batch_size
     n_test_batches = test_set_x.get_value(borrow=True).shape[0] / batch_size
-    n_predict_batches = test_set_x.get_value(borrow=True).shape[0] / batch_size
+    n_predict_batches = predict_set_x.get_value(borrow=True).shape[0] / batch_size
+    print ("n_test_batches", n_test_batches, "n_predict_batches",n_predict_batches)
+
 
     ######################
     # BUILD ACTUAL MODEL #
     ######################
-    print '... building the model'
+    print ('... building the model')
 
     # allocate symbolic variables for the data
     index = T.lscalar()  # index to a [mini]batch
@@ -344,10 +346,10 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
                 x: test_set_x[index * batch_size: (index + 1) * batch_size],
                 y: test_set_y[index * batch_size: (index + 1) * batch_size]})
 
-    release_output = theano.function(inputs=[index],
+    release_output = theano.function(inputs=[],
             outputs=classifier.predict(),
             givens={
-                x: predict_set_x[index:]})
+              x: predict_set_x[:]})
 
     validate_model = theano.function(inputs=[index],
             outputs=classifier.errors(y),
@@ -377,7 +379,7 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
     ###############
     # TRAIN MODEL #
     ###############
-    print '... training the model'
+    print ('... training the model')
     # early-stopping parameters
     patience = 5000  # look as this many examples regardless
     patience_increase = 2  # wait this much longer when a new best is
@@ -399,7 +401,7 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
     epoch = 0
     while (epoch < n_epochs) and (not done_looping):
         epoch = epoch + 1
-        for minibatch_index in xrange(n_train_batches):
+        for minibatch_index in range(int(n_train_batches)):
 
             minibatch_avg_cost = train_model(minibatch_index)
             # iteration number
@@ -408,7 +410,7 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
             if (iter + 1) % validation_frequency == 0:
                 # compute zero-one loss on validation set
                 validation_losses = [validate_model(i)
-                                     for i in xrange(n_valid_batches)]
+                                     for i in range(int(n_valid_batches))]
                 this_validation_loss = numpy.mean(validation_losses)
 
                 print('epoch %i, minibatch %i/%i, validation error %f %%' % \
@@ -426,18 +428,8 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
                     # test it on the test set
 
                     test_losses = [test_model(i)
-                                   for i in xrange(n_test_batches)]
+                                   for i in range(int(n_test_batches))]
                     test_score = numpy.mean(test_losses)
-
-                    y_pred_show = [release_output(i)
-                                   for i in xrange(n_predict_batches)]
-
-                    print y_pred_show;
-                    f = open("predict_res","w+");
-                    for y_pred_item_array in y_pred_show:
-                      for y_pred_item in y_pred_item_array:
-                        f.write(str(y_pred_item)+'\n');
-                    f.close();
 
                     print(('     epoch %i, minibatch %i/%i, test error of best'
                        ' model %f %%') %
@@ -452,11 +444,25 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
     print(('Optimization complete with best validation score of %f %%,'
            'with test performance %f %%') %
                  (best_validation_loss * 100., test_score * 100.))
-    print 'The code run for %d epochs, with %f epochs/sec' % (
-        epoch, 1. * epoch / (end_time - start_time))
-    print >> sys.stderr, ('The code for file ' +
-                          os.path.split(__file__)[1] +
-                          ' ran for %.1fs' % ((end_time - start_time)))
+
+    print('Writing predict to predict_res')
+    print (n_predict_batches)
+    y_pred_show = release_output()
+    print (y_pred_show)
+    f = open("predict_res","w+")
+    n = 1
+    f.write('ImageId,Label'+'\n')
+    for y_pred_item in y_pred_show:
+      f.write(str(n)+','+str(y_pred_item)+'\n')
+      n+=1
+    f.close();
+
+
+    #print ('The code run for %d epochs, with %f epochs/sec') % (
+    #    epoch, 1. * epoch / (end_time - start_time))
+    #print >> sys.stderr, ('The code for file ' +
+    #                      os.path.split(__file__)[1] +
+    #                      ' ran for %.1fs' % ((end_time - start_time)))
 
 if __name__ == '__main__':
     sgd_optimization_mnist()
