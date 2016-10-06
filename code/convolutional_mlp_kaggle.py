@@ -104,7 +104,7 @@ class LeNetConvPoolLayer(object):
         self.params = [self.W, self.b]
 
 
-def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
+def evaluate_lenet5(learning_rate=0.08, n_epochs=200,
                     dataset='../data/mnist.pkl.gz',
                     nkerns=[20, 50], batch_size=500):
     """ Demonstrates lenet on MNIST dataset
@@ -197,9 +197,9 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
                 x: test_set_x[index * batch_size: (index + 1) * batch_size],
                 y: test_set_y[index * batch_size: (index + 1) * batch_size]})
 
-    predict_model = theano.function([], layer3.predict(),
+    predict_model = theano.function([index], layer3.predict(),
              givens={
-                x: predict_set_x[:]})
+                x: predict_set_x[index * batch_size: (index + 1) * batch_size]})
 
     validate_model = theano.function([index], layer3.errors(y),
             givens={
@@ -302,22 +302,26 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
           'with test performance %f %%' %
           (best_validation_loss * 100., best_iter + 1, test_score * 100.))
    
-    print ("Writing result to output file.")
-    predict_res_array = predict_model()
+    print ("predict result ...")
+    predict_res_array = [predict_model(i) for i in range(int(n_predict_batches))]
     print (predict_res_array)
-    f = open("predict_res","w+");
+
+    print ("Writing result to output file.")
+    
+    f = open("predict_res_new","w+")
     n = 1
     f.write('ImageId,Label'+'\n')
-    for y_pred_item in y_pred_show:
-      f.write(str(n)+','+str(y_pred_item)+'\n')
-      n+=1
+    for y_pred_item_array in predict_res_array:
+      for y_pred_item in y_pred_item_array:
+        f.write(str(n)+','+str(y_pred_item)+'\n')
+        n+=1
     f.close();
 
     
     
-    print >> sys.stderr, ('The code for file ' +
-                          os.path.split(__file__)[1] +
-                          ' ran for %.2fm' % ((end_time - start_time) / 60.))
+#    print >> sys.stderr, ('The code for file ' +
+#                          os.path.split(__file__)[1] +
+#                          ' ran for %.2fm' % ((end_time - start_time) / 60.))
 
 if __name__ == '__main__':
     evaluate_lenet5()
