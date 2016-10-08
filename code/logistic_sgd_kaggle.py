@@ -218,15 +218,18 @@ def load_data(dataset):
         if index<train_set_size : 
           train_set[1][index] = int(row[0]);
           for pixel_index in range(1,28*28+1) : 
-            train_set[0][index][pixel_index-1] = float(row[pixel_index])/255;
+            #train_set[0][index][pixel_index-1] = float(row[pixel_index])/255;
+            train_set[0][index][pixel_index-1] = float(row[pixel_index]);
         elif index < train_set_size + valid_set_size :
           valid_set[1][index-train_set_size] = int(row[0]);
           for pixel_index in range(1,28*28+1) : 
-            valid_set[0][index-train_set_size][pixel_index-1] = float(row[pixel_index])/255;
+            #valid_set[0][index-train_set_size][pixel_index-1] = float(row[pixel_index])/255;
+            valid_set[0][index-train_set_size][pixel_index-1] = float(row[pixel_index]);
         else :
           test_set[1][index-train_set_size-valid_set_size] = int(row[0]);
           for pixel_index in range(1,28*28+1) : 
-            test_set[0][index-train_set_size-valid_set_size][pixel_index-1] = float(row[pixel_index])/255;
+            #test_set[0][index-train_set_size-valid_set_size][pixel_index-1] = float(row[pixel_index])/255;
+            test_set[0][index-train_set_size-valid_set_size][pixel_index-1] = float(row[pixel_index]);
         index+=1;
         if index == train_set_size + valid_set_size + test_set_size : 
           break; 
@@ -238,7 +241,8 @@ def load_data(dataset):
       index=0;
       for row in datareader:
         for pixel_index in range(0,28*28) : 
-          predict_set[0][index][pixel_index] = float(row[pixel_index])/255;
+          #predict_set[0][index][pixel_index] = float(row[pixel_index])/255;
+          predict_set[0][index][pixel_index] = float(row[pixel_index]);
         index+=1;
         if index == predict_set_size: 
           break;

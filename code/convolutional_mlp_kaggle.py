@@ -104,9 +104,9 @@ class LeNetConvPoolLayer(object):
         self.params = [self.W, self.b]
 
 
-def evaluate_lenet5(learning_rate=0.08, n_epochs=200,
+def evaluate_lenet5(learning_rate=0.08, n_epochs=150,
                     dataset='../data/mnist.pkl.gz',
-                    nkerns=[20, 50], batch_size=500):
+                    nkerns=[20, 50], batch_size=100):
     """ Demonstrates lenet on MNIST dataset
 
     :type learning_rate: float
@@ -301,14 +301,16 @@ def evaluate_lenet5(learning_rate=0.08, n_epochs=200,
     print('Best validation score of %f %% obtained at iteration %i,'\
           'with test performance %f %%' %
           (best_validation_loss * 100., best_iter + 1, test_score * 100.))
-   
+    #save model
+    print ("Save model ...")
+    
     print ("predict result ...")
     predict_res_array = [predict_model(i) for i in range(int(n_predict_batches))]
     print (predict_res_array)
 
     print ("Writing result to output file.")
     
-    f = open("predict_res_new","w+")
+    f = open("predict_res_new_smallBatch_binary_image","w+")
     n = 1
     f.write('ImageId,Label'+'\n')
     for y_pred_item_array in predict_res_array:
