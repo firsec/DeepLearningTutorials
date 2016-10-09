@@ -188,9 +188,9 @@ def load_data(dataset):
     test_set=list();
     predict_set=list();
 
-    train_set_size = 36000;
-    valid_set_size = 5000;
-    test_set_size = 1000;
+    train_set_size = 36000*9;
+    valid_set_size = 5000*9;
+    test_set_size = 1000*9;
     predict_set_size = 28000;
 
     debug = "false";
@@ -210,7 +210,7 @@ def load_data(dataset):
     predict_set.append(numpy.ndarray(shape=(predict_set_size), dtype=int));
 
     #load data from kaggle test set
-    with open('train.csv', 'r') as csvfile:
+    with open('train_shift_orig.csv', 'r') as csvfile:
       datareader = csv.reader(csvfile, delimiter=',')
       index=0;
       for row in datareader:
@@ -218,18 +218,18 @@ def load_data(dataset):
         if index<train_set_size : 
           train_set[1][index] = int(row[0]);
           for pixel_index in range(1,28*28+1) : 
-            #train_set[0][index][pixel_index-1] = float(row[pixel_index])/255;
-            train_set[0][index][pixel_index-1] = float(row[pixel_index]);
+            train_set[0][index][pixel_index-1] = float(row[pixel_index])/255;
+            #train_set[0][index][pixel_index-1] = float(row[pixel_index]);
         elif index < train_set_size + valid_set_size :
           valid_set[1][index-train_set_size] = int(row[0]);
           for pixel_index in range(1,28*28+1) : 
-            #valid_set[0][index-train_set_size][pixel_index-1] = float(row[pixel_index])/255;
-            valid_set[0][index-train_set_size][pixel_index-1] = float(row[pixel_index]);
+            valid_set[0][index-train_set_size][pixel_index-1] = float(row[pixel_index])/255;
+            #valid_set[0][index-train_set_size][pixel_index-1] = float(row[pixel_index]);
         else :
           test_set[1][index-train_set_size-valid_set_size] = int(row[0]);
           for pixel_index in range(1,28*28+1) : 
-            #test_set[0][index-train_set_size-valid_set_size][pixel_index-1] = float(row[pixel_index])/255;
-            test_set[0][index-train_set_size-valid_set_size][pixel_index-1] = float(row[pixel_index]);
+            test_set[0][index-train_set_size-valid_set_size][pixel_index-1] = float(row[pixel_index])/255;
+            #test_set[0][index-train_set_size-valid_set_size][pixel_index-1] = float(row[pixel_index]);
         index+=1;
         if index == train_set_size + valid_set_size + test_set_size : 
           break; 
